@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Exam Terminal</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body {
+      background: #300a24;
+      color: #fff;
+      font-family: 'Fira Mono', 'Consolas', 'Monaco', monospace;
+      margin: 0;
+      padding: 0;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+    }
+    .terminal {
+      background: #2d073a;
+      border-radius: 8px;
+      box-shadow: 0 0 24px #0f0a, 0 0 4px #a259f7;
+      margin-top: 40px;
+      padding: 32px 24px 24px 24px;
+      width: 90vw;
+      max-width: 700px;
+      min-height: 60vh;
+      position: relative;
+      margin-left: 70px;
+    }
+    .terminal-header {
+      display: flex;
+      align-items: center;
+      margin-bottom: 24px;
+    }
+    .dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      margin-right: 8px;
+      display: inline-block;
+    }
+    .dot.red { background: #ff5555; }
+    .dot.yellow { background: #f1fa8c; }
+    .dot.green { background: #50fa7b; }
+    .terminal-title {
+      margin-left: 12px;
+      font-weight: bold;
+      letter-spacing: 1px;
+      color: #a259f7;
+      font-size: 1.1em;
+    }
+    .question-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+    .question-item {
+      margin-bottom: 22px;
+      cursor: pointer;
+      border-radius: 6px;
+      position: relative;
+      transition: background 0.2s;
+      background: #3c0d4a;
+      box-shadow: 0 2px 8px #0002;
+      padding: 0;
+      overflow: hidden;
+    }
+    .question-item:hover {
+      background: #4e1760;
+    }
+    .code-block {
+      display: flex;
+      font-size: 1.04em;
+      font-family: inherit;
+      color: #fff;
+    }
+    .line-numbers {
+      background: #2d073a;
+      color: #a259f7;
+      padding: 12px 10px 12px 16px;
+      text-align: right;
+      user-select: none;
+      min-width: 32px;
+      font-size: 1em;
+      border-right: 2px solid #a259f7;
+    }
+    .code-content {
+      padding: 12px 16px;
+      white-space: pre-wrap;
+      flex: 1;
+      color: #fff;
+    }
+    .code-keyword { color: #f1fa8c; }
+    .code-type { color: #50fa7b; }
+    .code-string { color: #f78c6c; }
+    .code-func { color: #82aaff; }
+    .copied-msg {
+      position: absolute;
+      right: 18px;
+      top: 10px;
+      color: #50fa7b;
+      font-size: 0.98em;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s;
+      background: #222;
+      padding: 2px 10px;
+      border-radius: 4px;
+    }
+    .question-item.copied .copied-msg {
+      opacity: 1;
+    }
+    /* Sidebar vertically centered */
+    .sidebar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 54px;
+      height: 100vh;
+      background: #1a0424;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+      box-shadow: 2px 0 8px #0002;
+    }
+    .sidebar-icon {
+      width: 40px;
+      height: 40px;
+      margin-bottom: 18px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.6em;
+      color: #a259f7;
+      background: #2d073a;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: background 0.2s, color 0.2s;
+    }
+    .sidebar-icon:hover {
+      background: #a259f7;
+      color: #fff;
+    }
+    /* Fullscreen button fixed in browser corner */
+    .fullscreen-btn {
+      position: fixed;
+      top: 18px;
+      right: 32px;
+      background: #a259f7;
+      color: #fff;
+      border: none;
+      border-radius: 5px;
+      font-size: 1.1em;
+      padding: 4px 10px;
+      cursor: pointer;
+      z-index: 200;
+      transition: background 0.2s;
+    }
+    .fullscreen-btn:hover {
+      background: #fff;
+      color: #a259f7;
+    }
+    .terminal.fullscreen {
+      position: fixed !important;
+      top: 0;
+      left: 0;
+      width: 100vw !important;
+      height: 100vh !important;
+      margin: 0 !important;
+      border-radius: 0 !important;
+      z-index: 999;
+      box-shadow: none !important;
+      padding-top: 40px !important;
+    }
+    @media (max-width: 700px) {
+      .sidebar { width: 40px; }
+      .terminal { margin-left: 48px; }
+      .fullscreen-btn { right: 8px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="sidebar">
+    <div class="sidebar-icon" title="Home">🏠</div>
+    <div class="sidebar-icon" title="Code">💻</div>
+    <div class="sidebar-icon" title="Docs">📄</div>
+    <div class="sidebar-icon" title="Settings">⚙️</div>
+  </div>
+  <div class="terminal" id="terminalBox">
+    <button class="fullscreen-btn" id="fullscreenBtn" title="Fullscreen">⛶</button>
+    <div class="terminal-header">
+      <span class="dot red"></span>
+      <span class="dot yellow"></span>
+      <span class="dot green"></span>
+      <span class="terminal-title">linuxtechi@ubuntu-22-04:~</span>
+    </div>
+    <ul class="question-list" id="questionList">
+      <!-- Questions will be injected here -->
+    </ul>
+  </div>
+  <script>
+    // All Python algorithm questions and their code answers
+    const qa = [
+      { q: "Quick Sort", a: `def quick_sort(arr):\n    if len(arr) <= 1:\n        return arr\n    pivot = arr[-1]\n    left = []\n    right = []\n    for x in arr[:-1]:\n        if x <= pivot:\n            left.append(x)\n        else:\n            right.append(x)\n    return quick_sort(left) + [pivot] + quick_sort(right)\n\narr1 = [10, 7, 8, 9, 1, 5]\nsorted_arr1 = quick_sort(arr1)\nprint(\"Quick Sort Output:\", sorted_arr1)` },
+      { q: "Fractional Knapsack", a: `def fractional_knapsack(value, weight, capacity):\n    n = len(value)\n    ratio = []\n    for i in range(n):\n        ratio.append((value[i] / weight[i], value[i], weight[i]))\n    ratio.sort()\n    ratio.reverse()\n    total_value = 0\n    for r, v, w in ratio:\n        if capacity >= w:\n            total_value += v\n            capacity -= w\n        else:\n            total_value += r * capacity\n            break\n    return total_value\n\nvalue = [60, 100, 120]\nweight = [10, 20, 30]\ncapacity = 50\nmax_value = fractional_knapsack(value, weight, capacity)\nprint(\"Fractional Knapsack Output:\", max_value)` },
+      { q: "Longest Common Subsequence (LCS)", a: `def lcs(X, Y):\n    m = len(X)\n    n = len(Y)\n    dp = []\n    for i in range(m+1):\n        row = []\n        for j in range(n+1):\n            row.append(0)\n        dp.append(row)\n    for i in range(m):\n        for j in range(n):\n            if X[i] == Y[j]:\n                dp[i+1][j+1] = dp[i][j] + 1\n            else:\n                if dp[i+1][j] > dp[i][j+1]:\n                    dp[i+1][j+1] = dp[i+1][j]\n                else:\n                    dp[i+1][j+1] = dp[i][j+1]\n    return dp[m][n]\n\nX = \"AGGTAB\"\nY = \"GXTXAYB\"\nlcs_result = lcs(X, Y)\nprint(\"LCS Output:\", lcs_result)` },
+      { q: "Rabin Karp", a: `def rabin_karp(text, pattern, q=101):\n    d = 256\n    m = len(pattern)\n    n = len(text)\n    p = 0\n    t = 0\n    h = 1\n    result = []\n    for i in range(m-1):\n        h = (h * d) % q\n    for i in range(m):\n        p = (d * p + ord(pattern[i])) % q\n        t = (d * t + ord(text[i])) % q\n    for i in range(n - m + 1):\n        if p == t:\n            match = True\n            for j in range(m):\n                if text[i + j] != pattern[j]:\n                    match = False\n                    break\n            if match:\n                result.append(i)\n        if i < n - m:\n            t = (d * (t - ord(text[i]) * h) + ord(text[i + m])) % q\n            if t < 0:\n                t = t + q\n    return result\n\ntext = \"ABCCDDAEFG\"\npattern = \"CDD\"\nfound = rabin_karp(text, pattern)\nprint(\"Rabin Karp Output:\", found)` },
+      { q: "Merge Sort", a: `def merge_sort(arr):\n    if len(arr) > 1:\n        mid = len(arr) // 2\n        L = arr[:mid]\n        R = arr[mid:]\n        merge_sort(L)\n        merge_sort(R)\n        i = 0\n        j = 0\n        k = 0\n        while i < len(L) and j < len(R):\n            if L[i] < R[j]:\n                arr[k] = L[i]\n                i = i + 1\n            else:\n                arr[k] = R[j]\n                j = j + 1\n            k = k + 1\n        while i < len(L):\n            arr[k] = L[i]\n            i = i + 1\n            k = k + 1\n        while j < len(R):\n            arr[k] = R[j]\n            j = j + 1\n            k = k + 1\n    return arr\n\narr2 = [12, 11, 13, 5, 6, 7]\nsorted_arr2 = merge_sort(arr2)\nprint(\"Merge Sort Output:\", sorted_arr2)` },
+      { q: "Binary Search", a: `def binary_search(arr, x):\n    low = 0\n    high = len(arr) - 1\n    while low <= high:\n        mid = (low + high) // 2\n        if arr[mid] == x:\n            return mid\n        elif arr[mid] < x:\n            low = mid + 1\n        else:\n            high = mid - 1\n    return -1\n\nsearch_element = 6\nindex = binary_search(sorted_arr2, search_element)\nprint(\"Binary Search Output (index of 6):\", index)` },
+      { q: "Dijkstra Algorithm", a: `def dijkstra(graph, start):\n    visited = {}\n    distance = {}\n    for node in graph:\n        distance[node] = 999999\n        visited[node] = False\n    distance[start] = 0\n    for _ in range(len(graph)):\n        min_distance = 999999\n        min_node = None\n        for node in graph:\n            if not visited[node] and distance[node] < min_distance:\n                min_distance = distance[node]\n                min_node = node\n        if min_node is None:\n            break\n        visited[min_node] = True\n        for neighbor, weight in graph[min_node]:\n            if distance[min_node] + weight < distance[neighbor]:\n                distance[neighbor] = distance[min_node] + weight\n    return distance\n\ngraph = {\n    'A': [('B', 1), ('C', 4)],\n    'B': [('C', 2), ('D', 5)],\n    'C': [('D', 1)],\n    'D': []\n}\nshortest_paths = dijkstra(graph, 'A')\nprint(\"Dijkstra's Algorithm Output:\", shortest_paths)` }
+    ];
+
+    // Fullscreen button logic (browser fullscreen for whole page)
+    const fullscreenBtn = document.getElementById('fullscreenBtn');
+    let isFullscreen = false;
+    fullscreenBtn.addEventListener('click', () => {
+      const elem = document.documentElement; // fullscreen the whole page
+      if (!isFullscreen) {
+        if (elem.requestFullscreen) {
+          elem.requestFullscreen();
+        } else if (elem.webkitRequestFullscreen) { // Safari
+          elem.webkitRequestFullscreen();
+        } else if (elem.msRequestFullscreen) { // IE11
+          elem.msRequestFullscreen();
+        }
+      } else {
+        if (document.exitFullscreen) {
+          document.exitFullscreen();
+        } else if (document.webkitExitFullscreen) { // Safari
+          document.webkitExitFullscreen();
+        } else if (document.msExitFullscreen) { // IE11
+          document.msExitFullscreen();
+        }
+      }
+    });
+
+    // Listen for fullscreen change to update button icon
+    document.addEventListener('fullscreenchange', () => {
+      isFullscreen = !!document.fullscreenElement;
+      fullscreenBtn.textContent = isFullscreen ? '🗗' : '⛶';
+    });
+    document.addEventListener('webkitfullscreenchange', () => {
+      isFullscreen = !!document.webkitFullscreenElement;
+      fullscreenBtn.textContent = isFullscreen ? '🗗' : '⛶';
+    });
+    document.addEventListener('msfullscreenchange', () => {
+      isFullscreen = !!document.msFullscreenElement;
+      fullscreenBtn.textContent = isFullscreen ? '🗗' : '⛶';
+    });
+
+    // Render questions as code blocks
+    const questionList = document.getElementById('questionList');
+    qa.forEach((item, idx) => {
+      // Prepare code lines for line numbers
+      const codeLines = item.q.split('\n');
+      const lineCount = codeLines.length;
+      let lineNumbers = '';
+      for (let i = 1; i <= lineCount; i++) lineNumbers += i + '\n';
+
+      // Build code block for question
+      const li = document.createElement('li');
+      li.className = 'question-item';
+      li.innerHTML = `
+        <div class="code-block">
+          <div class="line-numbers">${lineNumbers}</div>
+          <div class="code-content">${item.q}</div>
+        </div>
+        <span class="copied-msg">Copied!</span>
+      `;
+      li.addEventListener('click', async () => {
+        try {
+          await navigator.clipboard.writeText(item.a);
+          li.classList.add('copied');
+          setTimeout(() => li.classList.remove('copied'), 1200);
+        } catch (e) {
+          alert('Copy failed. Try again.');
+        }
+      });
+      questionList.appendChild(li);
+    });
+  </script>
+</body>
+</html>
